@@ -1,1 +1,168 @@
-./setup_dtech.sh
+#!/bin/bash
+
+echo "============================================"
+echo "  D-TECH FULL AUTO SETUP SCRIPT (Option A)"
+echo "============================================"
+
+PROJECT="dtech-site"
+PDF_SOURCE="/mnt/data/Killer ChatGPT Prompts - Harness the Power of AI for Success and Profit.pdf"
+
+echo "[1/12] Creating project directory..."
+mkdir -p $PROJECT
+cd $PROJECT || exit 1
+
+echo "[2/12] Initializing new Next.js project files..."
+mkdir -p pages public public/assets styles brand
+
+# -------------------------
+# package.json
+# -------------------------
+cat << 'EOF' > package.json
+{
+  "name": "d-tech-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "framer-motion": "^7.0.0",
+    "@sendgrid/mail": "^7.7.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}
+EOF
+
+# -------------------------
+# next.config.js
+# -------------------------
+cat << 'EOF' > next.config.js
+module.exports = { reactStrictMode: true };
+EOF
+
+# -------------------------
+# vercel.json
+# -------------------------
+cat << 'EOF' > vercel.json
+{
+  "version": 2,
+  "builds": [{ "src": "package.json", "use": "@vercel/next" }],
+  "env": {
+    "SENDGRID_API_KEY": "@sendgrid_api_key",
+    "HUBSPOT_API_KEY": "@hubspot_api_key",
+    "HUBSPOT_PORTAL_ID": "@hubspot_portal_id",
+    "NEXT_PUBLIC_CALENDLY": "@calendly_link"
+  }
+}
+EOF
+
+# -------------------------
+# Tailwind + PostCSS config
+# -------------------------
+cat << 'EOF' > postcss.config.js
+module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
+EOF
+
+cat << 'EOF' > tailwind.config.js
+module.exports = {
+  content: ["./pages/**/*.{js,jsx}", "./components/**/*.{js,jsx}"],
+  theme: { extend: {} },
+  plugins: []
+};
+EOF
+
+# -------------------------
+# Global CSS
+# -------------------------
+cat << 'EOF' > styles/globals.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --dt-cyan-500: #06b6d4;
+  --dt-cyan-400: #22d3ee;
+  --dt-cyan-700: #0891b2;
+  --dt-bg: #0b1020;
+  --dt-ink: #e6fffa;
+}
+
+html { scroll-behavior: smooth }
+body { background-color: white; color: #0f172a; }
+.dark body { background-color: var(--dt-bg); color: var(--dt-ink); }
+
+.btn-dtech {
+  background: linear-gradient(90deg, var(--dt-cyan-400), var(--dt-cyan-700));
+  color: #02121a;
+  padding: .75rem 1.25rem;
+  border-radius: .75rem;
+  font-weight: 600;
+}
+EOF
+
+
+# -------------------------
+# _app.js
+# -------------------------
+cat << 'EOF' > pages/_app.js
+import '../styles/globals.css'
+import { useEffect, useState } from 'react'
+
+export default function App({ Component, pageProps }) {
+  const [theme, setTheme] = useState('light')
+  useEffect(() => {
+    const t = localStorage.getItem('dt_theme') || 'light'
+    setTheme(t)
+    document.documentElement.classList.toggle('dark', t === 'dark')
+  }, [])
+  function toggle() {
+    const nt = theme === 'light' ? 'dark' : 'light'
+    setTheme(nt)
+    localStorage.setItem('dt_theme', nt)
+    document.documentElement.classList.toggle('dark', nt === 'dark')
+  }
+  return (
+    <div className={theme === 'dark' ? 'dark' : ''}>
+      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <Component {...pageProps} toggleTheme={toggle} theme={theme} />
+      </div>
+    </div>
+  )
+}
+EOF
+
+# -------------------------
+# Pages (Home + Contact + API)
+# -------------------------
+cat << 'EOF' > pages/index.js
+export default function Home() {
+  return <h1>D-Tech Home</h1>
+}
+EOF
+
+cat << 'EOF' > pages/contact.js
+export default function Contact() {
+  return <h1>Contact D-Tech</h1>
+}
+EOF
+
+cat << 'EOF' > pages/api/contact.js
+export default function handler(req, res) {
+  res.status(200).json({ message: "Received" });
+}
+EOF
+
+# -------------------------
+# Logo SVG
+# -------------------------
+cat << 'EOF' > public/logo.svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#06b6d4"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs><path d="M100 1
